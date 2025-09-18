@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crossword Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <h1>Crossword Generator</h1>
+        <p>
+          Build a crossword puzzle by providing words with clues and choosing a
+          grid size.
+        </p>
+      </header>
+
+      <section class="panel">
+        <form id="generator-form" class="form" autocomplete="off">
+          <div class="form__field">
+            <label for="entries">Words &amp; clues</label>
+            <textarea
+              id="entries"
+              name="entries"
+              rows="10"
+              placeholder="WORD: Your clue"
+              required
+            >MARS: Fourth planet from the sun
+VENUS: Planet named after the Roman goddess of love
+EARTH: The planet we call home
+MOON: Earth's natural satellite
+SUN: The star at the center of the Solar System
+SATURN: Planet famous for its rings
+</textarea>
+            <p class="form__hint">
+              Enter one word and clue per line separated by a colon.
+              Non-letter characters are ignored in answers.
+            </p>
+          </div>
+
+          <div class="form__grid">
+            <div class="form__field">
+              <label for="rows">Rows</label>
+              <input
+                id="rows"
+                name="rows"
+                type="number"
+                min="5"
+                max="25"
+                value="13"
+                required
+              />
+            </div>
+            <div class="form__field">
+              <label for="cols">Columns</label>
+              <input
+                id="cols"
+                name="cols"
+                type="number"
+                min="5"
+                max="25"
+                value="13"
+                required
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="button">Generate crossword</button>
+        </form>
+        <p id="message" class="message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="result" aria-live="polite">
+        <div id="grid" class="grid"></div>
+        <div class="clues">
+          <div class="clues__group">
+            <h2>Across</h2>
+            <ol id="across-list"></ol>
+          </div>
+          <div class="clues__group">
+            <h2>Down</h2>
+            <ol id="down-list"></ol>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
