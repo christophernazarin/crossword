@@ -394,7 +394,18 @@ if (typeof document !== 'undefined') {
     const downList = document.getElementById('down-list');
     const printButton = document.getElementById('print-button');
     const fillModeInputs = Array.from(form.querySelectorAll('input[name="fillMode"]'));
+    const resultHeader = document.getElementById('result-header');
+    const resultTitle = document.getElementById('result-title');
+    const resultSummary = document.getElementById('result-summary');
+    const resultFooter = document.getElementById('result-footer');
     let lastResult = null;
+
+    const updateMetadata = ({ header, title, summary, footer }) => {
+      resultHeader.textContent = header;
+      resultTitle.textContent = title;
+      resultSummary.textContent = summary;
+      resultFooter.textContent = footer;
+    };
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -409,6 +420,13 @@ if (typeof document !== 'undefined') {
         return;
       }
 
+      const metadata = {
+        header: form.header.value.trim(),
+        title: form.title.value.trim(),
+        summary: form.summary.value.trim(),
+        footer: form.footer.value.trim(),
+      };
+
       let entries;
       try {
         entries = parseEntries(rawEntries);
@@ -418,6 +436,7 @@ if (typeof document !== 'undefined') {
         acrossList.innerHTML = '';
         downList.innerHTML = '';
         printButton.hidden = true;
+        updateMetadata({ header: '', title: '', summary: '', footer: '' });
         lastResult = null;
         return;
       }
@@ -435,6 +454,7 @@ if (typeof document !== 'undefined') {
         acrossList.innerHTML = '';
         downList.innerHTML = '';
         printButton.hidden = true;
+        updateMetadata({ header: '', title: '', summary: '', footer: '' });
         lastResult = null;
         return;
       }
@@ -444,6 +464,7 @@ if (typeof document !== 'undefined') {
       renderClues(acrossList, result.across);
       renderClues(downList, result.down);
       printButton.hidden = false;
+      updateMetadata(metadata);
       lastResult = result;
 
       const placedSummary =

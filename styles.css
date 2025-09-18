@@ -1,5 +1,4 @@
 :root {
-  color-scheme: light dark;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   background-color: #f5f5f5;
@@ -157,7 +156,7 @@ body {
 .grid__cell {
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(0, 0, 0, 0.35);
   position: relative;
   text-transform: uppercase;
   font-weight: 700;
@@ -165,6 +164,7 @@ body {
   font-size: 1.1rem;
   background: #fff;
   color: #111;
+  border-radius: 6px;
 }
 
 .grid__cell--blank {
@@ -193,15 +193,45 @@ body {
   padding-bottom: 0.35rem;
 }
 
-.clues__group ol {
+.clues__list {
   margin: 0;
-  padding-left: 1.1rem;
+  padding: 0;
+  list-style: none;
   display: grid;
   gap: 0.4rem;
 }
 
 .clues__group li {
   line-height: 1.4;
+}
+
+.result__header,
+.result__footer {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.result__header {
+  margin-bottom: 0.5rem;
+}
+
+.result__footer {
+  margin-top: 0.75rem;
+}
+
+.result__title {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.result__summary {
+  margin: 0;
+}
+
+.result__line:empty,
+.result__summary:empty,
+.result__title:empty {
+  display: none;
 }
 
 .result__actions {
@@ -211,12 +241,13 @@ body {
 
 @page {
   size: A4 portrait;
-  margin: 1.2cm;
+  margin: 1cm;
 }
 
 @media print {
   body {
     background: #fff;
+    font-size: 11pt;
   }
 
   .panel,
@@ -232,10 +263,28 @@ body {
 
   .result {
     gap: 1rem;
+    page-break-inside: avoid;
+  }
+
+  .grid {
+    width: 100%;
   }
 
   .grid table {
-    margin: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 18cm;
+  }
+
+  .clues {
+    margin: 0 auto;
+    max-width: 18cm;
+  }
+
+  .result__header,
+  .result__footer {
+    width: 100%;
+    max-width: 18cm;
   }
 }
 

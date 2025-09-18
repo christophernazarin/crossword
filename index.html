@@ -19,6 +19,48 @@
       <section class="panel">
         <form id="generator-form" class="form" autocomplete="off">
           <div class="form__field">
+            <label for="title">Puzzle title</label>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              placeholder="e.g. Sunday Worship Quiz"
+              value="Solar System"
+            />
+          </div>
+
+          <div class="form__field">
+            <label for="summary">Puzzle summary</label>
+            <textarea
+              id="summary"
+              name="summary"
+              rows="2"
+              placeholder="A short description shown beneath the title"
+            >A celestial crossword challenge for the youth group.</textarea>
+          </div>
+
+          <div class="form__grid">
+            <div class="form__field">
+              <label for="header">Header line</label>
+              <input
+                id="header"
+                name="header"
+                type="text"
+                placeholder="e.g. Community Church"
+              />
+            </div>
+            <div class="form__field">
+              <label for="footer">Footer line</label>
+              <input
+                id="footer"
+                name="footer"
+                type="text"
+                placeholder="e.g. Resource Catalogue #2024-07"
+              />
+            </div>
+          </div>
+
+          <div class="form__field">
             <label for="entries">Words &amp; clues</label>
             <textarea
               id="entries"
@@ -88,6 +130,11 @@ SATURN: Planet famous for its rings
       </section>
 
       <section class="result" aria-live="polite">
+        <div class="result__header">
+          <p id="result-header" class="result__line"></p>
+          <h2 id="result-title" class="result__title"></h2>
+          <p id="result-summary" class="result__summary"></p>
+        </div>
         <div class="result__actions">
           <button id="print-button" class="button button--secondary" hidden>
             Print crossword
@@ -97,12 +144,15 @@ SATURN: Planet famous for its rings
         <div class="clues">
           <div class="clues__group">
             <h2>Across</h2>
-            <ol id="across-list"></ol>
+            <ul id="across-list" class="clues__list"></ul>
           </div>
           <div class="clues__group">
             <h2>Down</h2>
-            <ol id="down-list"></ol>
+            <ul id="down-list" class="clues__list"></ul>
           </div>
+        </div>
+        <div class="result__footer">
+          <p id="result-footer" class="result__line"></p>
         </div>
       </section>
     </main>
