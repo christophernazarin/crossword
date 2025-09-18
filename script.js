@@ -21,59 +21,58 @@ class CrosswordGenerator {
     this.placedCount = 0;
   }
 
-  generate(maxAttempts = 200) {
+  generate(maxAttempts = 400) {
     if (!this.entries.length) {
       return null;
     }
 
+    let best = null;
+
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
       this.clearState();
-      const order = this.buildOrder(attempt);
-      if (this.backtrack(order, 0)) {
-        return this.buildResult();
+      const order = this.buildOrder();
+
+      for (const entryIndex of order) {
+        const entry = this.entries[entryIndex];
+        const placements = this.findPlacements(entry);
+
+        if (!placements.length) {
+          continue;
+        }
+
+        const bestOverlap = placements[0].overlaps;
+        const topChoices = placements.filter((placement) => placement.overlaps === bestOverlap);
+        const choice = topChoices[Math.floor(Math.random() * topChoices.length)];
+        this.placeEntry(entryIndex, choice);
+      }
+
+      if (this.placedCount === 0) {
+        continue;
+      }
+
+      if (!best || this.placedCount > best.placedCount) {
+        best = {
+          placedCount: this.placedCount,
+          result: this.buildResult(),
+        };
+
+        if (best.placedCount === this.entries.length) {
+          break;
+        }
       }
     }
 
-    return null;
+    return best ? { ...best.result, placedCount: best.placedCount } : null;
   }
 
-  buildOrder(seed) {
-    const indices = this.entries.map((entry) => entry.index);
-    indices.sort((a, b) => {
-      const diff = this.entries[b].word.length - this.entries[a].word.length;
-      if (diff !== 0) {
-        return diff;
-      }
-      // deterministic shuffle based on seed
-      return Math.sin(seed + a * 13 + b * 17);
-    });
-    return indices;
-  }
-
-  backtrack(order, depth) {
-    if (depth === order.length) {
-      return true;
-    }
-
-    const entryIndex = order[depth];
-    const entry = this.entries[entryIndex];
-    const placements = this.findPlacements(entry);
-
-    if (!placements.length) {
-      return false;
-    }
-
-    placements.sort((a, b) => b.overlaps - a.overlaps);
-
-    for (const placement of placements) {
-      this.placeEntry(entryIndex, placement);
-      if (this.backtrack(order, depth + 1)) {
-        return true;
-      }
-      this.removeEntry(entryIndex);
-    }
-
-    return false;
+  buildOrder() {
+    return this.entries
+      .map((entry) => ({
+        index: entry.index,
+        priority: entry.word.length + Math.random(),
+      }))
+      .sort((a, b) => b.priority - a.priority)
+      .map((item) => item.index);
   }
 
   findPlacements(entry) {
@@ -91,6 +90,13 @@ class CrosswordGenerator {
         }
       }
     }
+
+    placements.sort((a, b) => {
+      if (b.overlaps !== a.overlaps) {
+        return b.overlaps - a.overlaps;
+      }
+      return Math.random() - 0.5;
+    });
 
     return placements;
   }
@@ -189,20 +195,6 @@ class CrosswordGenerator {
     this.placedCount += 1;
   }
 
-  removeEntry(entryIndex) {
-    const placement = this.placements[entryIndex];
-    if (!placement) {
-      return;
-    }
-
-    for (const pos of placement.filledPositions) {
-      this.grid[pos.row][pos.col] = '';
-    }
-
-    this.placements[entryIndex] = null;
-    this.placedCount -= 1;
-  }
-
   buildResult() {
     const grid = this.grid.map((row) => row.slice());
     const numberGrid = Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
@@ -239,9 +231,10 @@ class CrosswordGenerator {
       const clueEntry = {
         number,
         clue: entry.clue,
-        answer: entry.word,
         row: placement.row,
         col: placement.col,
+        direction: placement.direction,
+        length: entry.word.length,
       };
 
       if (placement.direction === 'across') {
@@ -320,7 +313,7 @@ function parseEntries(raw) {
   return entries;
 }
 
-function renderGrid(grid, numberGrid, container) {
+function renderGrid(grid, numberGrid, container, displayGrid) {
   container.innerHTML = '';
   const table = document.createElement('table');
   const tbody = document.createElement('tbody');
@@ -335,7 +328,8 @@ function renderGrid(grid, numberGrid, container) {
       if (value === '') {
         td.classList.add('grid__cell--blank');
       } else {
-        td.textContent = value;
+        const shown = displayGrid ? displayGrid[row][col] : value;
+        td.textContent = shown || '';
         const number = numberGrid[row][col];
         if (number !== null && number !== undefined) {
           const span = document.createElement('span');
@@ -358,9 +352,29 @@ function renderClues(list, clues) {
   list.innerHTML = '';
   clues.forEach((clue) => {
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${clue.number}.</strong> ${clue.clue}<span class="clues__answer">${clue.answer}</span>`;
+    li.innerHTML = `<strong>${clue.number}.</strong> ${clue.clue}`;
     list.appendChild(li);
   });
+}
+
+function buildDisplayGrid(result, mode) {
+  const base = result.grid.map((row) => row.map((cell) => (cell === '' ? '' : '')));
+
+  if (mode === 'blank') {
+    return base;
+  }
+
+  if (mode === 'assisted') {
+    const assisted = base.map((row) => row.slice());
+    const reveal = (clue) => {
+      assisted[clue.row][clue.col] = result.grid[clue.row][clue.col];
+    };
+    result.across.forEach(reveal);
+    result.down.forEach(reveal);
+    return assisted;
+  }
+
+  return result.grid.map((row) => row.slice());
 }
 
 function showMessage(element, message, type) {
@@ -378,6 +392,9 @@ if (typeof document !== 'undefined') {
     const gridContainer = document.getElementById('grid');
     const acrossList = document.getElementById('across-list');
     const downList = document.getElementById('down-list');
+    const printButton = document.getElementById('print-button');
+    const fillModeInputs = Array.from(form.querySelectorAll('input[name="fillMode"]'));
+    let lastResult = null;
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -385,6 +402,7 @@ if (typeof document !== 'undefined') {
       const rawEntries = form.entries.value;
       const rows = Number.parseInt(form.rows.value, 10);
       const cols = Number.parseInt(form.cols.value, 10);
+      const fillMode = form.fillMode.value;
 
       if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows <= 0 || cols <= 0) {
         showMessage(message, 'Please provide valid grid dimensions.', 'error');
@@ -399,6 +417,8 @@ if (typeof document !== 'undefined') {
         gridContainer.innerHTML = '';
         acrossList.innerHTML = '';
         downList.innerHTML = '';
+        printButton.hidden = true;
+        lastResult = null;
         return;
       }
 
@@ -414,17 +434,41 @@ if (typeof document !== 'undefined') {
         gridContainer.innerHTML = '';
         acrossList.innerHTML = '';
         downList.innerHTML = '';
+        printButton.hidden = true;
+        lastResult = null;
         return;
       }
 
-      renderGrid(result.grid, result.numberGrid, gridContainer);
+      const displayGrid = buildDisplayGrid(result, fillMode);
+      renderGrid(result.grid, result.numberGrid, gridContainer, displayGrid);
       renderClues(acrossList, result.across);
       renderClues(downList, result.down);
+      printButton.hidden = false;
+      lastResult = result;
+
+      const placedSummary =
+        result.placedCount === entries.length
+          ? `all ${result.placedCount}`
+          : `${result.placedCount} of ${entries.length}`;
       showMessage(
         message,
-        `Generated a ${rows} × ${cols} crossword with ${entries.length} entries.`,
+        `Generated a ${rows} × ${cols} crossword with ${placedSummary} words placed.`,
         'success',
       );
+    });
+
+    fillModeInputs.forEach((input) => {
+      input.addEventListener('change', () => {
+        if (!lastResult) {
+          return;
+        }
+        const displayGrid = buildDisplayGrid(lastResult, form.fillMode.value);
+        renderGrid(lastResult.grid, lastResult.numberGrid, gridContainer, displayGrid);
+      });
+    });
+
+    printButton.addEventListener('click', () => {
+      window.print();
     });
   });
 }

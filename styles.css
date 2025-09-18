@@ -56,11 +56,36 @@ body {
   padding: 0.5rem 0.75rem;
   background: rgba(255, 255, 255, 0.9);
   box-sizing: border-box;
+  color: #111;
 }
 
 .form__field textarea {
   resize: vertical;
   min-height: 220px;
+}
+
+.form__field--inline {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.form__field--inline legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.option input {
+  accent-color: #2f61d5;
 }
 
 .form__hint {
@@ -89,6 +114,16 @@ body {
 
 .button:active {
   transform: translateY(0);
+}
+
+.button--secondary {
+  background: #fff;
+  color: #2f61d5;
+  border: 1px solid rgba(47, 97, 213, 0.4);
+}
+
+.button[hidden] {
+  display: none;
 }
 
 .message {
@@ -129,6 +164,7 @@ body {
   text-align: center;
   font-size: 1.1rem;
   background: #fff;
+  color: #111;
 }
 
 .grid__cell--blank {
@@ -168,10 +204,39 @@ body {
   line-height: 1.4;
 }
 
-.clues__answer {
-  color: #6b7280;
-  font-size: 0.85rem;
-  display: block;
+.result__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@page {
+  size: A4 portrait;
+  margin: 1.2cm;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .panel,
+  .button,
+  .message {
+    display: none !important;
+  }
+
+  .app {
+    max-width: none;
+    padding: 0;
+  }
+
+  .result {
+    gap: 1rem;
+  }
+
+  .grid table {
+    margin: 0;
+  }
 }
 
 @media (max-width: 700px) {

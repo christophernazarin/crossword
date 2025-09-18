@@ -66,12 +66,33 @@ SATURN: Planet famous for its rings
             </div>
           </div>
 
+          <fieldset class="form__field form__field--inline">
+            <legend>Fill style</legend>
+            <label class="option">
+              <input type="radio" name="fillMode" value="blank" checked />
+              <span>Blank Crossword</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="fillMode" value="assisted" />
+              <span>Assisted Crossword</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="fillMode" value="answered" />
+              <span>Answered Crossword</span>
+            </label>
+          </fieldset>
+
           <button type="submit" class="button">Generate crossword</button>
         </form>
         <p id="message" class="message" role="status" aria-live="polite"></p>
       </section>
 
       <section class="result" aria-live="polite">
+        <div class="result__actions">
+          <button id="print-button" class="button button--secondary" hidden>
+            Print crossword
+          </button>
+        </div>
         <div id="grid" class="grid"></div>
         <div class="clues">
           <div class="clues__group">
