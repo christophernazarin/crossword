@@ -266,11 +266,13 @@ body {
 }
 
 @media print {
+  html,
   body {
     background: #fff;
     font-size: 11pt;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    height: auto;
   }
 
   .panel,
@@ -290,7 +292,8 @@ body {
     gap: 1rem;
     page-break-inside: avoid;
     break-inside: avoid;
-    break-after: avoid;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
 
   .result__main {
@@ -300,6 +303,8 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .grid {
@@ -320,6 +325,8 @@ body {
     max-width: none;
     font-size: 0.9rem;
     width: 100%;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 }
 
@@ -339,6 +346,6 @@ body {
   .clues {
     width: 100%;
     align-items: stretch;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
