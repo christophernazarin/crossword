@@ -347,6 +347,13 @@ function parseEntries(raw) {
 
 function renderGrid(grid, numberGrid, container, displayGrid) {
   container.innerHTML = '';
+  if (grid && grid.length && grid[0]) {
+    container.style.setProperty('--rows', grid.length);
+    container.style.setProperty('--cols', grid[0].length);
+  } else {
+    container.style.removeProperty('--rows');
+    container.style.removeProperty('--cols');
+  }
   const table = document.createElement('table');
   const tbody = document.createElement('tbody');
 
