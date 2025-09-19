@@ -152,14 +152,13 @@ body {
 .grid {
   --cell-size: 36px;
   overflow-x: auto;
-  justify-self: end;
-  order: 2;
+  justify-self: center;
 }
 
 .grid table {
   border-collapse: collapse;
   margin: 0 auto;
-  border-radius: 12px;
+  border-radius: 0;
   border: 5px solid #000;
 }
 
@@ -174,7 +173,6 @@ body {
   font-size: 1.05rem;
   background: #fff;
   color: #111;
-  border-radius: 4px;
   box-sizing: border-box;
 }
 
@@ -194,19 +192,19 @@ body {
 }
 
 .result__main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1.5rem;
-  align-items: start;
 }
 
 .clues {
-  order: 1;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   align-items: stretch;
-  justify-self: stretch;
+  width: min(640px, 100%);
+  margin: 0 auto;
   font-size: 0.95rem;
 }
 
@@ -296,16 +294,13 @@ body {
   .result__main {
     width: auto;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
-    justify-content: center;
-    justify-items: start;
   }
 
   .grid {
-    order: 2;
-    justify-self: center;
     --cell-size: calc((50vw - 8px) / var(--cols, 1));
   }
 
@@ -315,12 +310,10 @@ body {
   }
 
   .clues {
-    order: 1;
     gap: 0.75rem;
     margin: 0 auto;
     max-width: 50vw;
     font-size: 0.9rem;
-    justify-self: center;
   }
 }
 
@@ -334,16 +327,11 @@ body {
   }
 
   .result__main {
-    grid-template-columns: 1fr;
-  }
-
-  .grid {
-    order: 1;
-    justify-self: center;
+    align-items: center;
   }
 
   .clues {
-    order: 2;
+    width: 100%;
     align-items: stretch;
   }
 }
