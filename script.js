@@ -425,26 +425,12 @@ if (typeof document !== 'undefined') {
     const acrossList = document.getElementById('across-list');
     const downList = document.getElementById('down-list');
     const printButton = document.getElementById('print-button');
-    const inkFriendlyToggle = document.getElementById('ink-friendly');
     const fillModeInputs = Array.from(form.querySelectorAll('input[name="fillMode"]'));
     const resultHeader = document.getElementById('result-header');
     const resultTitle = document.getElementById('result-title');
     const resultSummary = document.getElementById('result-summary');
     const resultFooter = document.getElementById('result-footer');
     let lastResult = null;
-    let inkPreference = inkFriendlyToggle ? inkFriendlyToggle.checked : false;
-
-    const applyInkFriendly = (enabled) => {
-      if (enabled) {
-        document.body.classList.add('ink-friendly');
-      } else {
-        document.body.classList.remove('ink-friendly');
-      }
-      if (inkFriendlyToggle) {
-        inkFriendlyToggle.checked = enabled;
-      }
-    };
-
     const updateMetadata = ({ header, title, summary, footer }) => {
       resultHeader.textContent = header;
       resultTitle.textContent = title;
@@ -551,39 +537,16 @@ if (typeof document !== 'undefined') {
       window.print();
     });
 
-    if (inkFriendlyToggle) {
-      inkFriendlyToggle.addEventListener('change', (event) => {
-        inkPreference = event.target.checked;
-        applyInkFriendly(inkPreference);
-      });
-    }
-
-    let inkPreferenceBeforePrint = inkPreference;
-    const restoreInkPreference = () => {
-      inkPreference = inkPreferenceBeforePrint;
-      applyInkFriendly(inkPreference);
-    };
-
     window.addEventListener('beforeprint', () => {
-      inkPreferenceBeforePrint = inkPreference;
-      applyInkFriendly(true);
+      if (lastResult) {
+        renderGrid(lastResult.grid, lastResult.numberGrid, gridContainer, buildDisplayGrid(lastResult, form.fillMode.value));
+      }
     });
 
-    window.addEventListener('afterprint', restoreInkPreference);
-
-    if (typeof window.matchMedia === 'function') {
-      const mediaQueryList = window.matchMedia('print');
-      const handleMediaChange = (event) => {
-        if (!event.matches) {
-          restoreInkPreference();
-        }
-      };
-
-      if (typeof mediaQueryList.addEventListener === 'function') {
-        mediaQueryList.addEventListener('change', handleMediaChange);
-      } else if (typeof mediaQueryList.addListener === 'function') {
-        mediaQueryList.addListener(handleMediaChange);
+    window.addEventListener('afterprint', () => {
+      if (lastResult) {
+        renderGrid(lastResult.grid, lastResult.numberGrid, gridContainer, buildDisplayGrid(lastResult, form.fillMode.value));
       }
-    }
+    });
   });
 }
