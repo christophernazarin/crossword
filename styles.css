@@ -53,7 +53,7 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   box-sizing: border-box;
   color: #111;
 }
@@ -151,12 +151,14 @@ body {
 .grid table {
   border-collapse: collapse;
   margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .grid__cell {
   width: 36px;
   height: 36px;
-  border: 2px solid rgba(0, 0, 0, 0.35);
+  border: 2px solid #000;
   position: relative;
   text-transform: uppercase;
   font-weight: 700;
@@ -164,12 +166,13 @@ body {
   font-size: 1.1rem;
   background: #fff;
   color: #111;
-  border-radius: 6px;
+  border-radius: 5px;
 }
 
 .grid__cell--blank {
-  background: #1c1d20;
-  border-color: #1c1d20;
+  background: #000;
+  border-color: #000;
+  border-radius: 0;
 }
 
 .grid__number {
@@ -266,13 +269,9 @@ body {
     page-break-inside: avoid;
   }
 
-  .grid {
-    width: 100%;
-  }
-
   .grid table {
     margin: 0 auto;
-    width: 100%;
+    width: auto;
     max-width: 18cm;
   }
 

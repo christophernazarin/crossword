@@ -8,13 +8,7 @@
   </head>
   <body>
     <main class="app">
-      <header class="app__header">
-        <h1>Crossword Generator</h1>
-        <p>
-          Build a crossword puzzle by providing words with clues and choosing a
-          grid size.
-        </p>
-      </header>
+      <header class="app__header"></header>
 
       <section class="panel">
         <form id="generator-form" class="form" autocomplete="off">
@@ -25,7 +19,7 @@
               name="title"
               type="text"
               placeholder="e.g. Sunday Worship Quiz"
-              value="Solar System"
+              value="## Crossword"
             />
           </div>
 
@@ -36,7 +30,7 @@
               name="summary"
               rows="2"
               placeholder="A short description shown beneath the title"
-            >A celestial crossword challenge for the youth group.</textarea>
+            ></textarea>
           </div>
 
           <div class="form__grid">
@@ -47,6 +41,7 @@
                 name="header"
                 type="text"
                 placeholder="e.g. Community Church"
+                value="## Church"
               />
             </div>
             <div class="form__field">
@@ -56,6 +51,7 @@
                 name="footer"
                 type="text"
                 placeholder="e.g. Resource Catalogue #2024-07"
+                value="## Crossword ##"
               />
             </div>
           </div>
@@ -68,12 +64,21 @@
               rows="10"
               placeholder="WORD: Your clue"
               required
-            >MARS: Fourth planet from the sun
-VENUS: Planet named after the Roman goddess of love
-EARTH: The planet we call home
-MOON: Earth's natural satellite
-SUN: The star at the center of the Solar System
-SATURN: Planet famous for its rings
+            >JESUS: The one who speaks with Nicodemus.
+NICODEMUS: Pharisee who comes by night.
+PHARISEE: Nicodemus was one of these.
+SPIRIT: Must be born of water and the ___.
+WIND: Blows where it wishes; compared to the Spirit.
+HEAVEN: No one ascends except He who descended.
+MOSES: Lifted the serpent in the wilderness.
+SERPENT: Raised by Moses for healing.
+ETERNAL: The kind of life God gives.
+LIGHT: Has come into the world, but people loved darkness.
+DARKNESS: Men loved this rather than light.
+TRUTH: Those who do this come into the light.
+CONDEMN: The Son was not sent to do this to the world.
+BELIEVE: Whoever does this shall not perish.
+FATHER: God so loved the world that He gave His only Son.
 </textarea>
             <p class="form__hint">
               Enter one word and clue per line separated by a colon.

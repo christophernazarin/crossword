@@ -62,7 +62,14 @@ class CrosswordGenerator {
       }
     }
 
-    return best ? { ...best.result, placedCount: best.placedCount } : null;
+    if (!best) {
+      return null;
+    }
+
+    return {
+      ...best.result,
+      placedCount: best.placedCount,
+    };
   }
 
   buildOrder() {
@@ -247,11 +254,16 @@ class CrosswordGenerator {
     across.sort((a, b) => a.number - b.number);
     down.sort((a, b) => a.number - b.number);
 
+    const omitted = this.entries
+      .filter((_, index) => !this.placements[index])
+      .map((entry) => entry.rawWord || entry.word);
+
     return {
       grid,
       numberGrid,
       across,
       down,
+      omitted,
     };
   }
 
@@ -476,6 +488,14 @@ if (typeof document !== 'undefined') {
         `Generated a ${rows} × ${cols} crossword with ${placedSummary} words placed.`,
         'success',
       );
+
+      if (result.omitted.length > 0) {
+        const lineBreak = document.createElement('br');
+        const omittedText = document.createElement('span');
+        omittedText.textContent = `The following words were omitted: ${result.omitted.join(', ')}`;
+        message.appendChild(lineBreak);
+        message.appendChild(omittedText);
+      }
     });
 
     fillModeInputs.forEach((input) => {
