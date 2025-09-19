@@ -157,9 +157,9 @@ body {
 .grid table {
   border-collapse: collapse;
   margin: 0 auto;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 2px solid #000;
+  border: 4px solid #000;
 }
 
 .grid__cell {
@@ -173,13 +173,13 @@ body {
   font-size: 1.1rem;
   background: #fff;
   color: #111;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .grid__cell--blank {
   background: #000;
   border-color: #000;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .grid__number {
@@ -289,20 +289,26 @@ body {
   }
 
   .result__main {
-    width: 50%;
+    width: auto;
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
+    justify-items: center;
+  }
+
+  .grid {
+    justify-self: center;
   }
 
   .grid table {
-    margin: 0;
+    margin: 0 auto;
     width: auto;
   }
 
   .clues {
     gap: 1rem;
+    margin: 0 auto;
   }
 }
 
