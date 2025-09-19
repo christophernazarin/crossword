@@ -50,10 +50,20 @@ class CrosswordGenerator {
         continue;
       }
 
-      if (!best || this.placedCount > best.placedCount) {
+      const resultData = this.buildResult();
+      const { density, filledCells } = resultData;
+
+      if (
+        !best ||
+        this.placedCount > best.placedCount ||
+        (this.placedCount === best.placedCount &&
+          (density > best.density || (density === best.density && filledCells > best.filledCells)))
+      ) {
         best = {
           placedCount: this.placedCount,
-          result: this.buildResult(),
+          density,
+          filledCells,
+          result: resultData,
         };
 
         if (best.placedCount === this.entries.length) {
@@ -69,6 +79,8 @@ class CrosswordGenerator {
     return {
       ...best.result,
       placedCount: best.placedCount,
+      density: best.density,
+      filledCells: best.filledCells,
     };
   }
 
@@ -209,12 +221,15 @@ class CrosswordGenerator {
     const down = [];
 
     let clueNumber = 1;
+    let filledCells = 0;
 
     for (let row = 0; row < this.rows; row += 1) {
       for (let col = 0; col < this.cols; col += 1) {
         if (grid[row][col] === '') {
           continue;
         }
+
+        filledCells += 1;
 
         const hasAcross = this.hasPlacementAt(row, col, 'across');
         const hasDown = this.hasPlacementAt(row, col, 'down');
@@ -258,12 +273,17 @@ class CrosswordGenerator {
       .filter((_, index) => !this.placements[index])
       .map((entry) => entry.rawWord || entry.word);
 
+    const totalCells = this.rows * this.cols;
+    const density = totalCells > 0 ? filledCells / totalCells : 0;
+
     return {
       grid,
       numberGrid,
       across,
       down,
       omitted,
+      filledCells,
+      density,
     };
   }
 
@@ -405,12 +425,25 @@ if (typeof document !== 'undefined') {
     const acrossList = document.getElementById('across-list');
     const downList = document.getElementById('down-list');
     const printButton = document.getElementById('print-button');
+    const inkFriendlyToggle = document.getElementById('ink-friendly');
     const fillModeInputs = Array.from(form.querySelectorAll('input[name="fillMode"]'));
     const resultHeader = document.getElementById('result-header');
     const resultTitle = document.getElementById('result-title');
     const resultSummary = document.getElementById('result-summary');
     const resultFooter = document.getElementById('result-footer');
     let lastResult = null;
+    let inkPreference = false;
+
+    const applyInkFriendly = (enabled) => {
+      if (enabled) {
+        document.body.classList.add('ink-friendly');
+      } else {
+        document.body.classList.remove('ink-friendly');
+      }
+      if (inkFriendlyToggle) {
+        inkFriendlyToggle.checked = enabled;
+      }
+    };
 
     const updateMetadata = ({ header, title, summary, footer }) => {
       resultHeader.textContent = header;
@@ -489,13 +522,19 @@ if (typeof document !== 'undefined') {
         'success',
       );
 
-      if (result.omitted.length > 0) {
-        const lineBreak = document.createElement('br');
-        const omittedText = document.createElement('span');
-        omittedText.textContent = `The following words were omitted: ${result.omitted.join(', ')}`;
-        message.appendChild(lineBreak);
-        message.appendChild(omittedText);
-      }
+      const omittedLine = document.createElement('span');
+      omittedLine.textContent =
+        result.omitted.length > 0
+          ? `The following words were omitted: ${result.omitted.join(', ')}`
+          : 'The following words were omitted: none.';
+      message.appendChild(document.createElement('br'));
+      message.appendChild(omittedLine);
+
+      const densityPercent = (result.density * 100).toFixed(1);
+      const densityLine = document.createElement('span');
+      densityLine.innerHTML = `Word density achieved: <strong>${densityPercent}%</strong>.`;
+      message.appendChild(document.createElement('br'));
+      message.appendChild(densityLine);
     });
 
     fillModeInputs.forEach((input) => {
@@ -510,6 +549,23 @@ if (typeof document !== 'undefined') {
 
     printButton.addEventListener('click', () => {
       window.print();
+    });
+
+    if (inkFriendlyToggle) {
+      inkFriendlyToggle.addEventListener('change', (event) => {
+        inkPreference = event.target.checked;
+        applyInkFriendly(inkPreference);
+      });
+    }
+
+    let inkPreferenceBeforePrint = inkPreference;
+    window.addEventListener('beforeprint', () => {
+      inkPreferenceBeforePrint = inkPreference;
+      applyInkFriendly(true);
+    });
+    window.addEventListener('afterprint', () => {
+      inkPreference = inkPreferenceBeforePrint;
+      applyInkFriendly(inkPreference);
     });
   });
 }
