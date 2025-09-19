@@ -172,11 +172,13 @@ body {
   font-size: 1.1rem;
   background: #fff;
   color: #111;
+  border-radius: 4px;
 }
 
 .grid__cell--blank {
   background: #000;
   border-color: #000;
+  border-radius: 4px;
 }
 
 body.ink-friendly .grid__cell--blank {
@@ -280,6 +282,8 @@ body.ink-friendly .grid__cell--blank {
   .app {
     max-width: none;
     padding: 0;
+    display: block;
+    gap: 0;
   }
 
   .result {

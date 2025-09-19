@@ -432,7 +432,7 @@ if (typeof document !== 'undefined') {
     const resultSummary = document.getElementById('result-summary');
     const resultFooter = document.getElementById('result-footer');
     let lastResult = null;
-    let inkPreference = false;
+    let inkPreference = inkFriendlyToggle ? inkFriendlyToggle.checked : false;
 
     const applyInkFriendly = (enabled) => {
       if (enabled) {
@@ -559,13 +559,31 @@ if (typeof document !== 'undefined') {
     }
 
     let inkPreferenceBeforePrint = inkPreference;
+    const restoreInkPreference = () => {
+      inkPreference = inkPreferenceBeforePrint;
+      applyInkFriendly(inkPreference);
+    };
+
     window.addEventListener('beforeprint', () => {
       inkPreferenceBeforePrint = inkPreference;
       applyInkFriendly(true);
     });
-    window.addEventListener('afterprint', () => {
-      inkPreference = inkPreferenceBeforePrint;
-      applyInkFriendly(inkPreference);
-    });
+
+    window.addEventListener('afterprint', restoreInkPreference);
+
+    if (typeof window.matchMedia === 'function') {
+      const mediaQueryList = window.matchMedia('print');
+      const handleMediaChange = (event) => {
+        if (!event.matches) {
+          restoreInkPreference();
+        }
+      };
+
+      if (typeof mediaQueryList.addEventListener === 'function') {
+        mediaQueryList.addEventListener('change', handleMediaChange);
+      } else if (typeof mediaQueryList.addListener === 'function') {
+        mediaQueryList.addListener(handleMediaChange);
+      }
+    }
   });
 }
