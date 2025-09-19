@@ -118,15 +118,6 @@ FATHER: God so loved the world that He gave His only Son.
                 required
               />
             </div>
-            <div class="form__field">
-              <label for="seed">Seed</label>
-              <input
-                id="seed"
-                name="seed"
-                type="text"
-                placeholder="e.g. 123 or sunday"
-              />
-            </div>
           </div>
 
           <fieldset class="form__field form__field--inline">
@@ -148,17 +139,6 @@ FATHER: God so loved the world that He gave His only Son.
           <button type="submit" class="button">Generate crossword</button>
         </form>
         <p id="message" class="message" role="status" aria-live="polite"></p>
-        <div id="progress" class="progress" hidden>
-          <div class="progress__line">
-            <span id="attempts">0</span> attempts • best:
-            <span id="bestScore">0</span> • elapsed:
-            <span id="elapsed">0.0</span>s
-          </div>
-          <div class="progress__actions">
-            <button id="btn-stop" type="button">Use best so far</button>
-            <button id="btn-keep" type="button">Keep searching</button>
-          </div>
-        </div>
       </section>
 
       <section class="result" aria-live="polite">
@@ -166,9 +146,23 @@ FATHER: God so loved the world that He gave His only Son.
           <p id="result-header" class="result__line"></p>
           <h2 id="result-title" class="result__title"></h2>
           <p id="result-summary" class="result__summary"></p>
-          <p id="result-legend" class="result__legend" hidden></p>
         </div>
         <div class="result__actions">
+          <fieldset id="print-modes" class="print-modes" hidden>
+            <legend class="visually-hidden">Print mode</legend>
+            <label class="option">
+              <input type="radio" name="printMode" value="blank" checked />
+              <span>Blank</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="printMode" value="partial" />
+              <span>Partial</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="printMode" value="answers" />
+              <span>Answers</span>
+            </label>
+          </fieldset>
           <button id="print-button" class="button button--secondary" hidden>
             Print crossword
           </button>
@@ -188,51 +182,8 @@ FATHER: God so loved the world that He gave His only Son.
         </div>
         <div class="result__footer">
           <p id="result-footer" class="result__line"></p>
-          <div id="answer-key" class="answer-key" hidden>
-            <p>
-              Answer key:
-              <a id="answer-link" href="#" rel="noopener" target="_blank"></a>
-            </p>
-            <canvas id="answer-qr" width="120" height="120" aria-hidden="true"></canvas>
-          </div>
         </div>
       </section>
-
-      <div
-        id="print-dialog"
-        class="print-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="print-dialog-title"
-        hidden
-      >
-        <div class="print-dialog__content">
-          <h2 id="print-dialog-title">Choose print mode</h2>
-          <fieldset>
-            <legend class="visually-hidden">Print fill level</legend>
-            <label class="option">
-              <input type="radio" name="printMode" value="blank" checked />
-              <span>Blank</span>
-            </label>
-            <label class="option">
-              <input type="radio" name="printMode" value="firstLetter" />
-              <span>First letter assist</span>
-            </label>
-            <label class="option">
-              <input type="radio" name="printMode" value="answers" />
-              <span>Answers</span>
-            </label>
-          </fieldset>
-          <div class="print-dialog__actions">
-            <button id="print-confirm" type="button" class="button">
-              Print
-            </button>
-            <button id="print-cancel" type="button" class="button button--secondary">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
     </main>
 
     <script src="script.js"></script>

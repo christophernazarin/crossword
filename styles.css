@@ -131,6 +131,23 @@ body {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
+.button--loading {
+  animation: button-fill 1s ease forwards;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.35));
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  background-position: left top;
+}
+
+@keyframes button-fill {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+
 .button:hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 16px rgba(47, 97, 213, 0.25);
@@ -228,71 +245,14 @@ body {
   color: #333;
 }
 
-.answer-key {
-  margin-top: 1rem;
-  display: grid;
-  gap: 0.5rem;
-  justify-items: start;
-}
 
-.answer-key a {
-  color: inherit;
-  word-break: break-all;
-}
-
-.answer-key canvas {
-  width: 120px;
-  height: 120px;
-}
-
-.progress {
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.8);
-}
-
-.progress[hidden] {
-  display: none;
-}
-
-.progress__line {
-  margin-bottom: 0.5rem;
-}
-
-.progress__actions button {
-  margin-right: 0.5rem;
-}
-
-.print-dialog {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: grid;
-  place-items: center;
-  z-index: 999;
-}
-
-.print-dialog[hidden] {
-  display: none;
-}
-
-.print-dialog__content {
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  width: min(320px, 90vw);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
-  display: grid;
-  gap: 1rem;
-}
-
-.print-dialog__actions {
+.print-modes {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  border: none;
+  padding: 0;
 }
 
 .clues {
@@ -364,6 +324,7 @@ body {
 .result__actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 @page {
@@ -387,9 +348,7 @@ body {
   .panel,
   .form,
   .message,
-  .progress,
   .result__actions,
-  .print-dialog,
   .button,
   .app__header {
     display: none !important;
@@ -414,8 +373,7 @@ body {
   }
 
   .grid,
-  .clues,
-  .answer-key {
+  .clues {
     page-break-inside: avoid;
     break-inside: avoid;
   }
@@ -444,13 +402,7 @@ body {
   }
 
   .grid__cell--blank {
-    background: repeating-linear-gradient(
-      45deg,
-      #ddd 0,
-      #ddd 2pt,
-      #fff 2pt,
-      #fff 4pt
-    );
+    background: #000;
   }
 
   .clues {
@@ -459,10 +411,6 @@ body {
     font-size: 10.5pt;
   }
 
-  #answer-qr {
-    width: 96pt;
-    height: 96pt;
-  }
 }
 
 @media (max-width: 900px) {

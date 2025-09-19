@@ -361,53 +361,6 @@ function parseEntries(raw, errorElement) {
   return entries;
 }
 
-function fnv1a(str) {
-  let hash = 2166136261;
-  for (let i = 0; i < str.length; i += 1) {
-    hash ^= str.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function mulberry32(a) {
-  return function rng() {
-    let t = (a += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function createSeededRng(seedInput) {
-  let seedText = seedInput.trim();
-  let seedValue;
-
-  if (!seedText) {
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const arr = new Uint32Array(1);
-      crypto.getRandomValues(arr);
-      seedValue = arr[0] || 1;
-      seedText = arr[0].toString(16);
-    } else {
-      seedValue = Math.floor(Math.random() * 2 ** 32);
-      seedText = seedValue.toString(16);
-    }
-  } else {
-    seedValue = fnv1a(seedText);
-  }
-
-  if (seedValue === 0) {
-    seedValue = 1;
-  }
-
-  return {
-    rng: mulberry32(seedValue >>> 0),
-    seedText,
-    seedValue: seedValue >>> 0,
-  };
-}
-
 function encodeBase64(str) {
   if (typeof btoa === 'function') {
     return btoa(unescape(encodeURIComponent(str)));
@@ -531,122 +484,6 @@ function showMessage(element, message, type) {
   }
 }
 
-function createSearchController({
-  rows,
-  cols,
-  entries,
-  rng,
-  updateProgress,
-  onPause,
-  timeWindowMs = 4000,
-}) {
-  const state = {
-    attempts: 0,
-    best: null,
-    running: false,
-    startTime: 0,
-    lastUpdate: 0,
-    windowDeadline: 0,
-    resolve: null,
-    cancelled: false,
-  };
-
-  const controller = {
-    resume(extraWindowMs = timeWindowMs) {
-      if (state.cancelled) {
-        return;
-      }
-      state.running = true;
-      state.startTime = state.startTime || performance.now();
-      state.windowDeadline = performance.now() + extraWindowMs;
-      requestAnimationFrame(loop);
-    },
-    stop() {
-      if (state.cancelled) {
-        return;
-      }
-      state.running = false;
-      if (state.resolve) {
-        state.resolve({
-          best: state.best,
-          attempts: state.attempts,
-          elapsed: (performance.now() - state.startTime) / 1000,
-        });
-      }
-    },
-    cancel() {
-      state.cancelled = true;
-      state.running = false;
-    },
-    getBest() {
-      return state.best;
-    },
-  };
-
-  controller.promise = new Promise((resolve) => {
-    state.resolve = resolve;
-  });
-
-  const loop = () => {
-    if (!state.running || state.cancelled) {
-      return;
-    }
-
-    const frameDeadline = performance.now() + 16;
-    while (performance.now() < frameDeadline && state.running && !state.cancelled) {
-      const generator = new CrosswordGenerator(rows, cols, entries, rng);
-      const result = generator.runAttempt();
-      state.attempts += 1;
-
-      if (result && (!state.best || result.placedCount > state.best.placedCount)) {
-        state.best = result;
-      } else if (
-        result &&
-        state.best &&
-        result.placedCount === state.best.placedCount &&
-        result.density > state.best.density
-      ) {
-        state.best = result;
-      }
-    }
-
-    const now = performance.now();
-    if (!state.lastUpdate || now - state.lastUpdate > 100) {
-      updateProgress({
-        attempts: state.attempts,
-        best: state.best,
-        elapsed: state.startTime ? (now - state.startTime) / 1000 : 0,
-      });
-      state.lastUpdate = now;
-    }
-
-    if (state.best && state.best.placedCount === entries.length) {
-      state.running = false;
-      updateProgress({
-        attempts: state.attempts,
-        best: state.best,
-        elapsed: (now - state.startTime) / 1000,
-      });
-      controller.stop();
-      return;
-    }
-
-    if (now >= state.windowDeadline) {
-      state.running = false;
-      onPause({
-        attempts: state.attempts,
-        best: state.best,
-        elapsed: (now - state.startTime) / 1000,
-      });
-      return;
-    }
-
-    requestAnimationFrame(loop);
-  };
-
-  return controller;
-}
-
 function updateUrlState(state) {
   if (typeof window === 'undefined') {
     return;
@@ -665,13 +502,6 @@ function updateUrlState(state) {
     params.delete('fill');
   }
 
-  const seedValue = state.seedText ?? state.seed;
-  if (seedValue) {
-    params.set('seed', seedValue);
-  } else {
-    params.delete('seed');
-  }
-
   if (state.entries) {
     params.set('entries', encodeBase64(state.entries));
   }
@@ -684,12 +514,6 @@ function updateUrlState(state) {
       params.delete(key);
     }
   });
-
-  if (state.mode) {
-    params.set('mode', state.mode);
-  } else {
-    params.delete('mode');
-  }
 
   url.search = params.toString();
   window.history.replaceState(null, '', url.toString());
@@ -710,13 +534,10 @@ function readUrlState() {
   if (params.has('fill')) {
     state.fill = params.get('fill');
   }
-  if (params.has('seed')) {
-    state.seed = params.get('seed');
-  }
   if (params.has('entries')) {
     state.entries = decodeBase64(params.get('entries'));
   }
-  ['title', 'summary', 'header', 'footer', 'mode'].forEach((key) => {
+  ['title', 'summary', 'header', 'footer'].forEach((key) => {
     if (params.has(key)) {
       state[key] = params.get(key) || '';
     }
@@ -724,84 +545,35 @@ function readUrlState() {
   return state;
 }
 
-function generateAnswerUrl(baseState, mode) {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-  const url = new URL(window.location.href);
-  const params = url.searchParams;
-  params.set('mode', mode);
-  url.search = params.toString();
-  return url.toString();
-}
-
-function updateAnswerKeyElements({ show, url, canvas }) {
-  const link = document.getElementById('answer-link');
-  const wrapper = document.getElementById('answer-key');
-  if (!link || !wrapper) {
-    return;
-  }
-
-  if (!show) {
-    wrapper.hidden = true;
-    if (canvas) {
-      canvas.hidden = true;
-    }
-    return;
-  }
-
-  link.textContent = url;
-  link.href = url;
-  wrapper.hidden = false;
-
-  if (canvas) {
-    canvas.hidden = true;
-  }
-}
-
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('generator-form');
+    const generateButton = form.querySelector('button[type="submit"]');
     const message = document.getElementById('message');
     const gridContainer = document.getElementById('grid');
     const acrossList = document.getElementById('across-list');
     const downList = document.getElementById('down-list');
     const printButton = document.getElementById('print-button');
+    const printModesFieldset = document.getElementById('print-modes');
     const fillModeInputs = Array.from(form.querySelectorAll('input[name="fillMode"]'));
     const resultHeader = document.getElementById('result-header');
     const resultTitle = document.getElementById('result-title');
     const resultSummary = document.getElementById('result-summary');
     const resultFooter = document.getElementById('result-footer');
-    const resultLegend = document.getElementById('result-legend');
     const inputErrors = document.getElementById('input-errors');
-    const progress = document.getElementById('progress');
-    const attemptsNode = document.getElementById('attempts');
-    const bestScoreNode = document.getElementById('bestScore');
-    const elapsedNode = document.getElementById('elapsed');
-    const stopButton = document.getElementById('btn-stop');
-    const keepButton = document.getElementById('btn-keep');
-    const printDialog = document.getElementById('print-dialog');
-    const printConfirm = document.getElementById('print-confirm');
-    const printCancel = document.getElementById('print-cancel');
-    const printModeInputs = () => Array.from(printDialog.querySelectorAll('input[name="printMode"]'));
-    const answerCanvas = document.getElementById('answer-qr');
+
+    const getPrintModeInputs = () =>
+      printModesFieldset
+        ? Array.from(printModesFieldset.querySelectorAll('input[name="printMode"]'))
+        : [];
 
     let lastResult = null;
     let lastDisplayMode = 'blank';
-    let activeController = null;
-    let printRestore = null;
-    let awaitingResume = false;
-    let lastMetadata = { header: '', title: '', summary: '', footer: '' };
-    let currentSeedText = '';
-    let initialMode = null;
-    let activeEntriesCount = 0;
-
     const updateMetadata = ({ header, title, summary, footer }) => {
       resultHeader.textContent = header || '';
       resultTitle.textContent = title || '';
       resultSummary.textContent = summary || '';
       resultFooter.textContent = footer || '';
-      lastMetadata = { header, title, summary, footer };
     };
 
     const resetResults = () => {
@@ -810,31 +582,10 @@ if (typeof document !== 'undefined') {
       acrossList.innerHTML = '';
       downList.innerHTML = '';
       printButton.hidden = true;
+      if (printModesFieldset) {
+        printModesFieldset.hidden = true;
+      }
       updateMetadata({ header: '', title: '', summary: '', footer: '' });
-      updateAnswerKeyElements({ show: false, canvas: answerCanvas });
-      resultLegend.hidden = true;
-    };
-
-    const startProgress = () => {
-      progress.hidden = false;
-      stopButton.disabled = true;
-      keepButton.disabled = true;
-      awaitingResume = false;
-      attemptsNode.textContent = '0';
-      const totalText = activeEntriesCount > 0 ? `0/${activeEntriesCount}` : '0/0';
-      bestScoreNode.textContent = totalText;
-      elapsedNode.textContent = '0.0';
-    };
-
-    const pauseProgress = () => {
-      stopButton.disabled = false;
-      keepButton.disabled = false;
-      awaitingResume = true;
-    };
-
-    const stopProgress = () => {
-      progress.hidden = true;
-      awaitingResume = false;
     };
 
     const getFillMode = () => form.fillMode.value;
@@ -849,24 +600,36 @@ if (typeof document !== 'undefined') {
       renderGrid(lastResult.grid, lastResult.numberGrid, gridContainer, displayGrid);
     };
 
-    const persistState = (seedText, mode) => {
+    const persistState = () => {
       updateUrlState({
         rows: form.rows.value,
         cols: form.cols.value,
         fill: getFillMode(),
-        seedText,
         entries: form.entries.value,
         title: form.title.value,
         summary: form.summary.value,
         header: form.header.value,
         footer: form.footer.value,
-        mode,
       });
     };
 
-    const finalizeResult = (result, entriesLength, seedText) => {
+    const triggerButtonAnimation = () => {
+      if (!generateButton) {
+        return;
+      }
+      generateButton.classList.add('button--loading');
+      const handleAnimationEnd = () => {
+        generateButton.classList.remove('button--loading');
+      };
+      generateButton.addEventListener('animationend', handleAnimationEnd, { once: true });
+    };
+
+    const finalizeResult = (result, entriesLength) => {
       lastResult = result;
       printButton.hidden = false;
+      if (printModesFieldset) {
+        printModesFieldset.hidden = false;
+      }
       updateMetadata({
         header: form.header.value.trim(),
         title: form.title.value.trim(),
@@ -902,15 +665,31 @@ if (typeof document !== 'undefined') {
       message.appendChild(document.createElement('br'));
       message.appendChild(densityLine);
 
-      persistState(seedText, null);
+      persistState();
+    };
+
+    const searchForBest = (rows, cols, entries) => {
+      const start = performance.now();
+      const deadline = start + 1000;
+      let best = null;
+      do {
+        const generator = new CrosswordGenerator(rows, cols, entries);
+        const attempt = generator.runAttempt();
+        if (!attempt) {
+          continue;
+        }
+        if (!best || attempt.placedCount > best.placedCount) {
+          best = attempt;
+        } else if (attempt.placedCount === best.placedCount && attempt.density > best.density) {
+          best = attempt;
+        }
+      } while (performance.now() < deadline);
+
+      return best;
     };
 
     const handleGeneration = (event, { auto = false } = {}) => {
       event?.preventDefault();
-
-      if (activeController) {
-        activeController.cancel();
-      }
 
       const parsedRows = Number.parseInt(form.rows.value, 10);
       const parsedCols = Number.parseInt(form.cols.value, 10);
@@ -923,34 +702,24 @@ if (typeof document !== 'undefined') {
       if (!entries || entries.length === 0) {
         resetResults();
         showMessage(message, 'Please fix the highlighted issues before generating.', 'error');
-        stopProgress();
         return;
       }
 
       if (entries.length < 6) {
         resetResults();
         showMessage(message, 'Please provide at least 6 valid entries to build a crossword.', 'error');
-        stopProgress();
         return;
       }
-
-      activeEntriesCount = entries.length;
 
       if (entries.length > 60) {
         showMessage(
           message,
-          'Large word lists may take longer to place. Consider increasing the time cap or trimming duplicates.',
+          'Large word lists may take longer to place. Consider expanding the grid or trimming duplicates.',
           'warning',
         );
       } else {
         showMessage(message, 'Searching for the densest layout…');
       }
-
-      const seedInfo = createSeededRng(form.seed.value || '');
-      currentSeedText = seedInfo.seedText;
-      form.seed.value = seedInfo.seedText;
-
-      persistState(seedInfo.seedText, null);
 
       const generatorEntries = entries.map((entry) => ({
         answer: entry.answer,
@@ -959,164 +728,52 @@ if (typeof document !== 'undefined') {
       }));
 
       resetResults();
-      startProgress();
 
-      const controller = createSearchController({
-        rows,
-        cols,
-        entries: generatorEntries,
-        rng: seedInfo.rng,
-        timeWindowMs: 4000,
-        updateProgress: ({ attempts, best, elapsed }) => {
-          attemptsNode.textContent = String(attempts);
-          const percent = activeEntriesCount > 0 && best
-            ? ((best.placedCount / activeEntriesCount) * 100).toFixed(1)
-            : '0.0';
-          bestScoreNode.textContent = best
-            ? `${best.placedCount}/${activeEntriesCount} (${percent}%)`
-            : `0/${activeEntriesCount}`;
-          elapsedNode.textContent = elapsed.toFixed(1);
-        },
-        onPause: ({ best }) => {
-          pauseProgress();
-          if (!best || (activeEntriesCount > 0 && best.placedCount / activeEntriesCount < 0.4)) {
-            showMessage(
-              message,
-              'Progress is slow. Consider increasing the grid size or removing duplicate short entries.',
-              'warning',
-            );
-          }
-        },
-      });
+      if (!auto) {
+        triggerButtonAnimation();
+      }
 
-      activeController = controller;
+      const best = searchForBest(rows, cols, generatorEntries);
 
-      controller.promise.then(({ best }) => {
-        if (controller.cancelled) {
-          return;
-        }
-        stopProgress();
-        activeController = null;
+      if (!best) {
+        showMessage(
+          message,
+          'Unable to build a crossword with the provided inputs. Try adjusting the grid size or word list.',
+          'error',
+        );
+        return;
+      }
 
-        if (!best) {
-          showMessage(
-            message,
-            'Unable to build a crossword with the provided inputs. Try adjusting the grid size or word list.',
-            'error',
-          );
-          resetResults();
-          return;
-        }
-
-        finalizeResult(best, entries.length, seedInfo.seedText);
-      });
-
-      controller.cancel = (() => {
-        const original = controller.cancel;
-        return () => {
-          original.call(controller);
-          activeController = null;
-        };
-      })();
-
-      stopButton.onclick = () => {
-        controller.stop();
-      };
-
-      keepButton.onclick = () => {
-        if (!awaitingResume) {
-          return;
-        }
-        keepButton.disabled = true;
-        stopButton.disabled = true;
-        awaitingResume = false;
-        controller.resume(4000);
-      };
-
-      controller.resume();
+      finalizeResult(best, entries.length);
     };
 
     fillModeInputs.forEach((input) => {
       input.addEventListener('change', () => {
         if (!lastResult) {
+          persistState();
           return;
         }
         renderCurrent();
-        persistState(currentSeedText, null);
+        persistState();
       });
     });
 
-    printButton.addEventListener('click', () => {
-      if (!lastResult) {
-        return;
+    const mapPrintMode = (mode) => {
+      if (mode === 'answers') {
+        return 'answered';
       }
-      openPrintDialog();
-    });
-
-    const openPrintDialog = () => {
-      const previous = document.activeElement;
-      printDialog.hidden = false;
-      const radios = printModeInputs();
-      const modeParam = (initialMode || getFillMode()) === 'answered' ? 'answers' : 'blank';
-      radios.forEach((radio) => {
-        radio.checked = radio.value === modeParam;
-      });
-      const firstRadio = radios[0];
-      firstRadio && firstRadio.focus();
-      printRestore = () => {
-        printDialog.hidden = true;
-        previous && previous.focus && previous.focus();
-      };
+      if (mode === 'partial') {
+        return 'assisted';
+      }
+      return 'blank';
     };
-
-    const closePrintDialog = () => {
-      if (printRestore) {
-        printRestore();
-        printRestore = null;
-      }
-    };
-
-    printCancel.addEventListener('click', closePrintDialog);
-
-    printDialog.addEventListener('click', (event) => {
-      if (event.target === printDialog) {
-        closePrintDialog();
-      }
-    });
-
-    printDialog.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closePrintDialog();
-      }
-    });
 
     const applyPrintMode = (mode) => {
       if (!lastResult) {
         return;
       }
-
-      const displayGrid = buildDisplayGrid(
-        lastResult,
-        mode === 'blank' ? 'blank' : mode === 'firstLetter' ? 'assisted' : 'answered',
-      );
+      const displayGrid = buildDisplayGrid(lastResult, mapPrintMode(mode));
       renderGrid(lastResult.grid, lastResult.numberGrid, gridContainer, displayGrid);
-
-      const legendText =
-        mode === 'answers'
-          ? 'Mode: Full answers'
-          : mode === 'firstLetter'
-          ? 'Mode: First letter assist'
-          : 'Mode: Blank grid';
-      resultLegend.textContent = legendText;
-      resultLegend.hidden = false;
-
-      const answerUrl = generateAnswerUrl({}, 'answers');
-      updateAnswerKeyElements({
-        show: mode !== 'answers',
-        url: answerUrl,
-        canvas: answerCanvas,
-      });
     };
 
     const restoreDisplayMode = () => {
@@ -1125,16 +782,19 @@ if (typeof document !== 'undefined') {
       }
       const displayGrid = buildDisplayGrid(lastResult, lastDisplayMode);
       renderGrid(lastResult.grid, lastResult.numberGrid, gridContainer, displayGrid);
-      resultLegend.hidden = true;
-      updateAnswerKeyElements({ show: false, canvas: answerCanvas });
     };
 
-    printConfirm.addEventListener('click', () => {
-      const selected = printModeInputs().find((input) => input.checked);
-      const mode = selected ? selected.value : 'blank';
-      closePrintDialog();
-      applyPrintMode(mode);
-      persistState(currentSeedText, mode);
+    const getSelectedPrintMode = () => {
+      const inputs = getPrintModeInputs();
+      const selected = inputs.find((input) => input.checked);
+      return selected ? selected.value : 'blank';
+    };
+
+    printButton.addEventListener('click', () => {
+      if (!lastResult) {
+        return;
+      }
+      applyPrintMode(getSelectedPrintMode());
       window.print();
     });
 
@@ -1142,7 +802,6 @@ if (typeof document !== 'undefined') {
     const handlePrintChange = (event) => {
       if (!event.matches) {
         restoreDisplayMode();
-        persistState(currentSeedText, null);
       }
     };
 
@@ -1152,10 +811,7 @@ if (typeof document !== 'undefined') {
       mediaQuery.addListener(handlePrintChange);
     }
 
-    window.addEventListener('afterprint', () => {
-      restoreDisplayMode();
-      persistState(currentSeedText, null);
-    });
+    window.addEventListener('afterprint', restoreDisplayMode);
 
     form.addEventListener('submit', (event) => handleGeneration(event));
 
@@ -1178,10 +834,6 @@ if (typeof document !== 'undefined') {
     if (initialState.footer) {
       form.footer.value = initialState.footer;
     }
-    if (initialState.seed) {
-      form.seed.value = initialState.seed;
-      currentSeedText = initialState.seed;
-    }
     if (initialState.fill) {
       const target = fillModeInputs.find((input) => input.value === initialState.fill);
       if (target) {
@@ -1191,18 +843,9 @@ if (typeof document !== 'undefined') {
     if (initialState.entries) {
       form.entries.value = initialState.entries;
     }
-    if (initialState.mode) {
-      initialMode = initialState.mode;
-    }
 
     if (initialState.entries) {
       handleGeneration(null, { auto: true });
-      if (initialMode === 'answers') {
-        fillModeInputs.forEach((input) => {
-          input.checked = input.value === 'answered';
-        });
-        persistState(currentSeedText, null);
-      }
     }
   });
 }
