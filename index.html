@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crossword Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header"></header>
+
+      <section class="panel">
+        <form id="generator-form" class="form" autocomplete="off">
+          <div class="form__field">
+            <label for="title">Puzzle title</label>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              placeholder="e.g. Sunday Worship Quiz"
+              value="## Crossword"
+            />
+          </div>
+
+          <div class="form__field">
+            <label for="summary">Puzzle summary</label>
+            <textarea
+              id="summary"
+              name="summary"
+              rows="2"
+              placeholder="A short description shown beneath the title"
+            ></textarea>
+          </div>
+
+          <div class="form__grid">
+            <div class="form__field">
+              <label for="header">Header line</label>
+              <input
+                id="header"
+                name="header"
+                type="text"
+                placeholder="e.g. Community Church"
+                value="## Church"
+              />
+            </div>
+            <div class="form__field">
+              <label for="footer">Footer line</label>
+              <input
+                id="footer"
+                name="footer"
+                type="text"
+                placeholder="e.g. Resource Catalogue #2024-07"
+                value="## Crossword ##"
+              />
+            </div>
+          </div>
+
+          <div class="form__field">
+            <label for="entries">Words &amp; clues</label>
+            <textarea
+              id="entries"
+              name="entries"
+              rows="10"
+              placeholder="WORD: Your clue"
+              required
+            >JESUS: The one who speaks with Nicodemus.
+NICODEMUS: Pharisee who comes by night.
+PHARISEE: Nicodemus was one of these.
+SPIRIT: Must be born of water and the ___.
+WIND: Blows where it wishes; compared to the Spirit.
+HEAVEN: No one ascends except He who descended.
+MOSES: Lifted the serpent in the wilderness.
+SERPENT: Raised by Moses for healing.
+ETERNAL: The kind of life God gives.
+LIGHT: Has come into the world, but people loved darkness.
+DARKNESS: Men loved this rather than light.
+TRUTH: Those who do this come into the light.
+CONDEMN: The Son was not sent to do this to the world.
+BELIEVE: Whoever does this shall not perish.
+FATHER: God so loved the world that He gave His only Son.
+</textarea>
+            <p class="form__hint">
+              Enter one word and clue per line separated by a colon.
+              Non-letter characters are ignored in answers.
+            </p>
+            <div
+              id="input-errors"
+              role="alert"
+              aria-live="polite"
+              class="errors"
+              hidden
+            ></div>
+          </div>
+
+          <div class="form__grid">
+            <div class="form__field">
+              <label for="rows">Rows</label>
+              <input
+                id="rows"
+                name="rows"
+                type="number"
+                min="5"
+                max="25"
+                value="13"
+                required
+              />
+            </div>
+            <div class="form__field">
+              <label for="cols">Columns</label>
+              <input
+                id="cols"
+                name="cols"
+                type="number"
+                min="5"
+                max="25"
+                value="13"
+                required
+              />
+            </div>
+          </div>
+
+          <fieldset class="form__field form__field--inline">
+            <legend>Fill style</legend>
+            <label class="option">
+              <input type="radio" name="fillMode" value="blank" checked />
+              <span>Blank Crossword</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="fillMode" value="assisted" />
+              <span>Assisted Crossword</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="fillMode" value="answered" />
+              <span>Answered Crossword</span>
+            </label>
+          </fieldset>
+
+          <button type="submit" class="button">Generate crossword</button>
+        </form>
+        <p id="message" class="message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="result" aria-live="polite">
+        <div class="result__header">
+          <p id="result-header" class="result__line"></p>
+          <h2 id="result-title" class="result__title"></h2>
+          <p id="result-summary" class="result__summary"></p>
+        </div>
+        <div class="result__actions">
+          <fieldset id="print-modes" class="print-modes" hidden>
+            <legend class="visually-hidden">Print mode</legend>
+            <label class="option">
+              <input type="radio" name="printMode" value="blank" checked />
+              <span>Blank</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="printMode" value="partial" />
+              <span>Partial</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="printMode" value="answers" />
+              <span>Answers</span>
+            </label>
+          </fieldset>
+          <button id="print-button" class="button button--secondary" hidden>
+            Print crossword
+          </button>
+        </div>
+        <div class="result__main">
+          <div id="grid" class="grid"></div>
+          <div class="clues">
+            <div class="clues__group">
+              <h2>Across</h2>
+              <ul id="across-list" class="clues__list"></ul>
+            </div>
+            <div class="clues__group">
+              <h2>Down</h2>
+              <ul id="down-list" class="clues__list"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="result__footer">
+          <p id="result-footer" class="result__line"></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

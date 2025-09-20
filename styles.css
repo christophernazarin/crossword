@@ -1,0 +1,430 @@
+:root {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  background-color: #f5f5f5;
+  color: #222;
+  --cols: 15;
+  --cell: min(24px, calc((100vw - 32px) / var(--cols)));
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  display: grid;
+  gap: 2rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app__header h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 3vw + 1rem, 3rem);
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.form__field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.form__field input,
+.form__field textarea {
+  width: 100%;
+  font: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-sizing: border-box;
+  color: #111;
+}
+
+.form__field textarea {
+  resize: vertical;
+  min-height: 220px;
+}
+
+.form__field--toggle {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.form__field--inline {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.form__field--inline legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.option input {
+  accent-color: #2f61d5;
+}
+
+.form__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.errors {
+  color: #b00020;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+.button {
+  justify-self: flex-start;
+  padding: 0.65rem 1.25rem;
+  border-radius: 999px;
+  border: none;
+  background: #2f61d5;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.button--loading {
+  animation: button-fill 1s ease forwards;
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.35));
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+  background-position: left top;
+}
+
+@keyframes button-fill {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(47, 97, 213, 0.25);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button--secondary {
+  background: #fff;
+  color: #2f61d5;
+  border: 1px solid rgba(47, 97, 213, 0.4);
+}
+
+.button[hidden] {
+  display: none;
+}
+
+.message {
+  min-height: 1.5rem;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+.message--error {
+  color: #c0392b;
+}
+
+.message--success {
+  color: #157347;
+}
+
+.message--warning {
+  color: #b55d00;
+}
+
+.result {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid {
+  overflow-x: auto;
+  justify-self: center;
+}
+
+.grid table {
+  border-collapse: collapse;
+  margin: 0 auto;
+  border-radius: 12px;
+  border: 6px solid #000;
+}
+
+.grid__cell {
+  width: var(--cell);
+  height: var(--cell);
+  border: 2px solid #000;
+  position: relative;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: center;
+  font-size: 1.05rem;
+  background: #fff;
+  color: #111;
+  box-sizing: border-box;
+  border-radius: 6px;
+}
+
+.grid__cell--blank {
+  background: #000;
+  border-color: #000;
+  border-radius: 0;
+}
+
+.grid__number {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.result__main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.result__legend {
+  margin: 0;
+  font-style: italic;
+  color: #333;
+}
+
+
+.print-modes {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.clues {
+  column-count: 2;
+  column-gap: 12mm;
+  width: min(720px, 100%);
+  margin: 0 auto;
+  font-size: 0.95rem;
+}
+
+.clues__group {
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+}
+
+.clues__group h2 {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.clues__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clues__list li {
+  break-inside: avoid;
+  text-indent: -1.5em;
+  padding-left: 1.5em;
+  margin: 0 0 0.35em;
+  line-height: 1.4;
+}
+
+.clues__list .n {
+  font-weight: 700;
+  margin-right: 0.35em;
+}
+
+.result__header,
+.result__footer {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.result__header {
+  margin-bottom: 0.5rem;
+}
+
+.result__footer {
+  margin-top: 0.75rem;
+}
+
+.result__title {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.result__summary {
+  margin: 0;
+}
+
+.result__line:empty,
+.result__summary:empty,
+.result__title:empty {
+  display: none;
+}
+
+.result__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+    font-size: 11pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  .panel,
+  .form,
+  .message,
+  .result__actions,
+  .button,
+  .app__header {
+    display: none !important;
+  }
+
+  .app {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .result {
+    gap: 0.75rem;
+  }
+
+  .result__main {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8mm;
+    align-items: start;
+    justify-content: center;
+  }
+
+  .grid,
+  .clues {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .grid {
+    justify-self: center;
+  }
+
+  .grid table {
+    border: 0.4pt solid #000;
+    border-radius: 6pt;
+  }
+
+  .grid__cell {
+    width: 18pt;
+    height: 18pt;
+    border: 0.4pt solid #000;
+    font-size: 12pt;
+  }
+
+  .grid__number {
+    font-size: 7pt;
+    top: 1pt;
+    left: 1.5pt;
+    color: #000;
+  }
+
+  .grid__cell--blank {
+    background: #000;
+  }
+
+  .clues {
+    column-count: 2;
+    column-gap: 12mm;
+    font-size: 10.5pt;
+  }
+
+}
+
+@media (max-width: 900px) {
+  .clues {
+    column-count: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .app {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  :root {
+    --cell: min(20px, calc((100vw - 24px) / var(--cols)));
+  }
+}
